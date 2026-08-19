@@ -5,6 +5,8 @@ import { vagasSeed } from "@/lib/vagas-seed";
 import { Vaga } from "@/lib/types";
 import { useEffect, useRef, useState } from "react";
 import CardVaga from "@/components/CardVaga";
+import Footer from "@/components/Footer";
+import Header from "@/components/Heard";
 
 export default function Home() {
   const [vagas, setVagas] = useState<Vaga[]>([]);
@@ -33,6 +35,9 @@ export default function Home() {
   if (carregando) return <p>Carregando vagas...</p>;
 
   return (
+    <>
+    <div className="flex min-h-screen flex-col">
+      <Header />
     <main>
       <h1 className="text-center">Portal de Vagas</h1>
       <div className="flex flex-wrap gap-4">
@@ -41,5 +46,8 @@ export default function Home() {
         ))}
       </div>
     </main>
+     <Footer />
+    </div>
+    </>
   );
 }
