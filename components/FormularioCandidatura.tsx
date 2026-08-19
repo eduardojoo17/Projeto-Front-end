@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Vaga } from "@/lib/types";
 import { CamposFormulario, Erros, validarCampos } from "@/lib/validacaoCandidatura";
 import { criarCandidatura, jaCandidatou } from "@/lib/candidatura";
+import {
+  apagarRascunho,
+  recuperarRascunho,
+  salvarRascunho,
+} from "@/lib/rascunho";
 
 const CAMPOS_INICIAIS: CamposFormulario = {
   nome: "",
@@ -65,6 +70,33 @@ export default function FormularioCandidatura({
   const [enviando, setEnviando] = useState(false);
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [enviada, setEnviada] = useState(false);
+  const jaRecuperou = useRef(false);
+
+  // Efeito de MONTAGEM: roda uma vez só, ao abrir o formulário, pra trazer de
+  // volta o que a pessoa digitou antes de fechar o modal ou dar F5 (R9).
+  // O useRef é a trava do StrictMode: em dev o React monta o componente duas
+  // vezes, e sem ela a recuperação rodaria duplicada.
+  useEffect(() => {
+    if (jaRecuperou.current) return;
+    jaRecuperou.current = true;
+
+    const salvo = recuperarRascunho<CamposFormulario>();
+    // O lint avisa que setState dentro de efeito pode causar renders em
+    // cascata. Aqui é proposital e acontece uma vez só, na montagem: é o
+    // momento em que trazemos o dado de fora do React (o localStorage).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (salvo) setDados(salvo);
+  }, []);
+
+  // Efeito de MUDANÇA: roda toda vez que `dados` muda, ou seja, a cada tecla.
+  useEffect(() => {
+    // Formulário vazio não vira rascunho: é o estado inicial, e salvá-lo
+    // apagaria por cima do rascunho que o efeito de cima acabou de recuperar.
+    const vazio = Object.values(dados).every((valor) => valor.trim() === "");
+    if (vazio) return;
+
+    salvarRascunho(dados);
+  }, [dados]);
 
   function aoMudarCampo(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -101,6 +133,8 @@ export default function FormularioCandidatura({
         portfolio: dados.portfolio.trim(),
         carta: dados.carta.trim(),
       });
+      // Enviou com sucesso: o rascunho não serve mais.
+      apagarRascunho();
       setEnviada(true);
     } catch {
       setErroGeral("Não foi possível enviar sua candidatura. Tente de novo.");
