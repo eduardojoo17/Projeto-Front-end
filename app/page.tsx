@@ -1,6 +1,6 @@
 "use client";
 
-import { listar, criar } from "@/lib/api";
+import { listar, salvarLista } from "@/lib/api";
 import { vagasSeed } from "@/lib/vagas-seed";
 import { Vaga } from "@/lib/types";
 import {
@@ -31,10 +31,15 @@ export default function Home() {
       let lista = await listar<Vaga>("vagas");
 
       if (lista.length === 0) {
-        for (const vaga of vagasSeed) {
-          await criar<Vaga>("vagas", vaga);
-        }
-        lista = await listar<Vaga>("vagas");
+        // Grava as 20 vagas de uma vez só. Um loop de `criar` custaria 20
+        // leituras de 700ms (~14s), porque cada `criar` chama `listar` por
+        // dentro — o AGENTS.md pede `salvarLista` justamente por isso.
+        const agora = Date.now();
+        // O id sai daqui porque, sem o delay de cada `criar`, todos os
+        // Date.now() do mesmo instante seriam iguais; o índice garante que
+        // cada vaga fique com um id único.
+        lista = vagasSeed.map((vaga, indice) => ({ ...vaga, id: agora + indice }));
+        await salvarLista<Vaga>("vagas", lista);
       }
       setVagas(lista);
       setCarregando(false);
@@ -49,16 +54,22 @@ export default function Home() {
     [vagas, filtros]
   );
 
-  if (carregando) return <p>Carregando vagas...</p>;
+  if (carregando)
+    return <p className="p-6 text-center text-gray-600">Carregando vagas...</p>;
 
   return (
     <>
       <div className="flex min-h-screen flex-col">
         <Header />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
-          <h1 className="text-center text-2xl font-bold">Portal de Vagas</h1>
+        {/* px-4 no celular / px-6 no tablet / px-8 no desktop: o conteúdo
+            nunca encosta na borda da tela. max-w-6xl + mx-auto centralizam
+            em telas grandes. */}
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          
 
-          <div className="mt-6">
+          {/* sem-impressao: a barra de filtros não vai pro PDF (ver o
+              bloco @media print em app/globals.css). */}
+          <div className="sem-impressao mt-6">
             <FiltrosVagas
               filtros={filtros}
               areas={areas}
@@ -83,7 +94,11 @@ export default function Home() {
                   key={vaga.id}
                   type="button"
                   onClick={() => setVagaAberta(vaga)}
-                  className="cursor-pointer text-left hover:opacity-80"
+                  // Largura do cartão em cada tela (o gap é de 1rem = 16px):
+                  // celular  -> w-full  = 1 coluna
+                  // tablet   -> metade da largura menos metade do gap = 2 colunas
+                  // desktop  -> um terço menos dois terços do gap = 3 colunas
+                  className="cartao-clicavel flex w-full cursor-pointer text-left transition hover:opacity-80 sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)]"
                 >
                   <CardVaga vaga={vaga} />
                 </button>

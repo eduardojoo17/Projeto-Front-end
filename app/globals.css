@@ -24,3 +24,55 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ---------------------------------------------------------------------------
+   Impressão / "Salvar em PDF" (Ctrl+P ou o botão do rodapé, que chama
+   window.print()).
+
+   Este é o único CSS puro do projeto: o resto do layout é feito com classes
+   do Tailwind (sm:/md:/lg:). Aqui vale a pena usar @media print porque as
+   regras valem pra página inteira e pra tags (header, footer, button) que
+   estão espalhadas em vários componentes.
+--------------------------------------------------------------------------- */
+@media print {
+  /* Cabeçalho, rodapé e a barra de filtros são navegação de tela:
+     no papel só ocupariam espaço. */
+  header,
+  footer,
+  .sem-impressao {
+    display: none !important;
+  }
+
+  /* Botões também somem — menos os cartões de vaga, que só são <button>
+     porque abrem o modal ao clicar. Sem esse :not() a lista inteira sumiria
+     do PDF. */
+  button:not(.cartao-clicavel) {
+    display: none !important;
+  }
+
+  /* Sem cabeçalho e rodapé, o conteúdo passa a ocupar a folha toda. */
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Sombra é efeito de tela: impressa vira uma mancha cinza. */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Garante fundo branco e texto preto mesmo se o sistema estiver no tema
+     escuro (o :root acima muda as cores por prefers-color-scheme). */
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  /* Na folha as classes sm:/lg: não são confiáveis (dependem da largura do
+     papel), então fixamos 2 cartões por linha. O break-inside evita que um
+     cartão seja cortado no meio na virada de página. */
+  .cartao-clicavel {
+    width: 48% !important;
+    break-inside: avoid;
+  }
+}
