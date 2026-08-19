@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f7fb;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -10,19 +10,58 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Animações usadas pelo modal (animate-surgir) e pelos cartões da lista
+     (animate-aparecer). Em Tailwind v4 basta declarar --animate-* aqui que a
+     classe `animate-<nome>` passa a existir. */
+  --animate-surgir: surgir 0.22s ease-out;
+  --animate-aparecer: aparecer 0.3s ease-out both;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 body {
-  background: var(--background);
+  /* O fundo é um cinza-azulado bem claro com dois brilhos indigo no topo:
+     dá profundidade sem competir com os cartões, que são brancos. */
+  background-color: var(--background);
+  background-image:
+    radial-gradient(60rem 30rem at 10% -10%, #e0e7ff 0%, transparent 60%),
+    radial-gradient(50rem 25rem at 95% -5%, #dbeafe 0%, transparent 55%);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Quem prefere menos movimento não vê as animações de entrada nem o giro do
+   indicador de carregamento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -61,10 +100,10 @@ body {
     box-shadow: none !important;
   }
 
-  /* Garante fundo branco e texto preto mesmo se o sistema estiver no tema
-     escuro (o :root acima muda as cores por prefers-color-scheme). */
+  /* Garante fundo branco e texto preto, sem o degradê da tela. */
   body {
     background: #fff;
+    background-image: none;
     color: #000;
   }
 

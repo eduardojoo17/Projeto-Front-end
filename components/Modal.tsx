@@ -36,7 +36,7 @@ export default function Modal({ aberto, aoFechar, titulo, children }: ModalProps
   return (
     <div
       onClick={aoFechar}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
     >
       <div
         ref={caixaRef}
@@ -45,14 +45,18 @@ export default function Modal({ aberto, aoFechar, titulo, children }: ModalProps
         aria-label={titulo}
         tabIndex={-1}
         onClick={(evento) => evento.stopPropagation()}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl outline-none"
+        className="animate-surgir max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/60 bg-white p-6 shadow-2xl shadow-slate-900/20 outline-none sm:p-7"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
-          {titulo ? <h2 className="text-lg font-bold sm:text-xl">{titulo}</h2> : <span />}
+          {titulo ? (
+            <h2 className="text-lg font-bold text-slate-900 sm:text-xl">{titulo}</h2>
+          ) : (
+            <span />
+          )}
           <button
             onClick={aoFechar}
             aria-label="Fechar"
-            className="shrink-0 rounded-md border px-2 py-1 text-sm leading-none hover:bg-gray-100"
+            className="shrink-0 cursor-pointer rounded-full border border-slate-200 px-2.5 py-1.5 text-sm leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
           >
             ✕
           </button>
