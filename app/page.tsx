@@ -7,10 +7,12 @@ import { useEffect, useRef, useState } from "react";
 import CardVaga from "@/components/CardVaga";
 import Footer from "@/components/Footer";
 import Header from "@/components/Heard";
+import ModalVaga from "@/components/ModalVaga";
 
 export default function Home() {
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [vagaAberta, setVagaAberta] = useState<Vaga | null>(null);
   const jaRodou = useRef(false);
 
   useEffect(() => {
@@ -42,12 +44,21 @@ export default function Home() {
       <h1 className="text-center">Portal de Vagas</h1>
       <div className="flex flex-wrap gap-4">
         {vagas.map((vaga) => (
-          <CardVaga key={vaga.id} vaga={vaga} />
+          <button
+            key={vaga.id}
+            type="button"
+            onClick={() => setVagaAberta(vaga)}
+            className="cursor-pointer text-left hover:opacity-80"
+          >
+            <CardVaga vaga={vaga} />
+          </button>
         ))}
       </div>
     </main>
      <Footer />
     </div>
+
+    <ModalVaga vaga={vagaAberta} aoFechar={() => setVagaAberta(null)} />
     </>
   );
 }
