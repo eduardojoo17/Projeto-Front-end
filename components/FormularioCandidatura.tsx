@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Vaga } from "@/lib/types";
 import { CamposFormulario, Erros, validarCampos } from "@/lib/validacaoCandidatura";
 import { criarCandidatura, jaCandidatou } from "@/lib/candidatura";
+import Carregando from "@/components/Carregando";
 import {
   apagarRascunho,
   recuperarRascunho,
@@ -37,7 +38,7 @@ function CampoTexto({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700" htmlFor={nome}>
+      <label className="block text-sm font-medium text-slate-700" htmlFor={nome}>
         {label}
       </label>
       <input
@@ -47,13 +48,13 @@ function CampoTexto({
         value={valor}
         onChange={aoMudar}
         placeholder={placeholder}
-        className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+        className={`mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
           erro
-            ? "border-red-400 focus:ring-red-200"
-            : "border-gray-300 focus:ring-indigo-200"
+            ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+            : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-100"
         }`}
       />
-      {erro && <p className="mt-1 text-xs text-red-600">{erro}</p>}
+      {erro && <p className="mt-1 text-xs font-medium text-red-600">{erro}</p>}
     </div>
   );
 }
@@ -145,16 +146,21 @@ export default function FormularioCandidatura({
 
   if (enviada) {
     return (
-      <div>
-        <h2 className="text-lg font-bold text-gray-900">Candidatura enviada!</h2>
-        <p className="mt-2 text-sm text-gray-600">
+      <div className="animate-surgir text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">
+          ✓
+        </span>
+        <h2 className="mt-4 text-lg font-bold text-slate-900">
+          Candidatura enviada!
+        </h2>
+        <p className="mt-2 text-sm text-slate-600">
           Recebemos sua candidatura para <strong>{vaga.titulo}</strong> na{" "}
           {vaga.empresa}. Boa sorte!
         </p>
         <button
           type="button"
           onClick={aoVoltar}
-          className="mt-6 w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="mt-6 w-full cursor-pointer rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
         >
           Voltar para a vaga
         </button>
@@ -162,19 +168,31 @@ export default function FormularioCandidatura({
     );
   }
 
+  // Enquanto a candidatura está indo pro "backend" (lib/api.ts espera 700ms
+  // por leitura), o formulário dá lugar ao mesmo indicador de carregamento da
+  // tela inicial. O componente continua montado, então nada do que foi
+  // digitado se perde caso o envio falhe e o formulário volte.
+  if (enviando) {
+    return (
+      <Carregando
+        mensagem="Salvando sua candidatura..."
+        descricao={`${vaga.titulo} · ${vaga.empresa}`}
+      />
+    );
+  }
+
   return (
-    <form onSubmit={aoSubmeter}>
+    <form onSubmit={aoSubmeter} className="animate-surgir">
       <button
         type="button"
         onClick={aoVoltar}
-        disabled={enviando}
-        className="mb-3 text-xs font-medium text-indigo-600 hover:underline disabled:text-gray-400 disabled:no-underline"
+        className="mb-3 cursor-pointer text-xs font-semibold text-indigo-600 transition hover:text-indigo-800 hover:underline"
       >
         ← Voltar para a vaga
       </button>
 
-      <h2 className="text-lg font-bold text-gray-900">Candidatar-se</h2>
-      <p className="text-sm text-gray-500">
+      <h2 className="text-lg font-bold text-slate-900">Candidatar-se</h2>
+      <p className="text-sm text-slate-500">
         {vaga.titulo} · {vaga.empresa}
       </p>
 
@@ -215,7 +233,7 @@ export default function FormularioCandidatura({
           placeholder="https://seuportfolio.com"
         />
         <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="carta">
+          <label className="block text-sm font-medium text-slate-700" htmlFor="carta">
             Carta de apresentação
           </label>
           <textarea
@@ -225,28 +243,32 @@ export default function FormularioCandidatura({
             value={dados.carta}
             onChange={aoMudarCampo}
             placeholder="Conte por que você se encaixa nessa vaga"
-            className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+            className={`mt-1 w-full resize-y rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
               erros.carta
-                ? "border-red-400 focus:ring-red-200"
-                : "border-gray-300 focus:ring-indigo-200"
+                ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-100"
             }`}
           />
-          {erros.carta && <p className="mt-1 text-xs text-red-600">{erros.carta}</p>}
+          {erros.carta && (
+            <p className="mt-1 text-xs font-medium text-red-600">{erros.carta}</p>
+          )}
         </div>
       </div>
 
       {erroGeral && (
-        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p
+          className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+        >
           {erroGeral}
         </p>
       )}
 
       <button
         type="submit"
-        disabled={enviando}
-        className="mt-6 w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+        className="mt-6 w-full cursor-pointer rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.99]"
       >
-        {enviando ? "Enviando..." : "Enviar candidatura"}
+        Enviar candidatura
       </button>
     </form>
   );

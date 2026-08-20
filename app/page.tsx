@@ -11,6 +11,7 @@ import {
 } from "@/lib/filtros";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CardVaga from "@/components/CardVaga";
+import Carregando from "@/components/Carregando";
 import FiltrosVagas from "@/components/FiltrosVagas";
 import Footer from "@/components/Footer";
 import Header from "@/components/Heard";
@@ -54,9 +55,6 @@ export default function Home() {
     [vagas, filtros]
   );
 
-  if (carregando)
-    return <p className="p-6 text-center text-gray-600">Carregando vagas...</p>;
-
   return (
     <>
       <div className="flex min-h-screen flex-col">
@@ -64,46 +62,69 @@ export default function Home() {
         {/* px-4 no celular / px-6 no tablet / px-8 no desktop: o conteúdo
             nunca encosta na borda da tela. max-w-6xl + mx-auto centralizam
             em telas grandes. */}
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          
-
-          {/* sem-impressao: a barra de filtros não vai pro PDF (ver o
-              bloco @media print em app/globals.css). */}
-          <div className="sem-impressao mt-6">
-            <FiltrosVagas
-              filtros={filtros}
-              areas={areas}
-              modalidades={modalidades}
-              aoMudar={setFiltros}
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+          {carregando ? (
+            <Carregando
+              mensagem="Carregando vagas..."
+              descricao="Buscando as oportunidades disponíveis"
             />
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            {vagasFiltradas.length} de {vagas.length}{" "}
-            {vagas.length === 1 ? "vaga" : "vagas"}
-          </p>
-
-          {vagasFiltradas.length === 0 ? (
-            <p className="mt-6 text-center text-gray-600">
-              Nenhuma vaga encontrada com esses filtros.
-            </p>
           ) : (
-            <div className="mt-4 flex flex-wrap gap-4">
-              {vagasFiltradas.map((vaga) => (
-                <button
-                  key={vaga.id}
-                  type="button"
-                  onClick={() => setVagaAberta(vaga)}
-                  // Largura do cartão em cada tela (o gap é de 1rem = 16px):
-                  // celular  -> w-full  = 1 coluna
-                  // tablet   -> metade da largura menos metade do gap = 2 colunas
-                  // desktop  -> um terço menos dois terços do gap = 3 colunas
-                  className="cartao-clicavel flex w-full cursor-pointer text-left transition hover:opacity-80 sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)]"
-                >
-                  <CardVaga vaga={vaga} />
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="sem-impressao">
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                  Encontre seu estágio
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Filtre por área ou modalidade e clique numa vaga para ver os
+                  detalhes e se candidatar.
+                </p>
+              </div>
+
+              {/* sem-impressao: a barra de filtros não vai pro PDF (ver o
+                  bloco @media print em app/globals.css). */}
+              <div className="sem-impressao mt-6">
+                <FiltrosVagas
+                  filtros={filtros}
+                  areas={areas}
+                  modalidades={modalidades}
+                  aoMudar={setFiltros}
+                />
+              </div>
+
+              <p className="mt-6 text-sm font-medium text-slate-500">
+                Mostrando{" "}
+                <span className="text-slate-900">{vagasFiltradas.length}</span> de{" "}
+                {vagas.length} {vagas.length === 1 ? "vaga" : "vagas"}
+              </p>
+
+              {vagasFiltradas.length === 0 ? (
+                <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white/60 p-10 text-center">
+                  <p className="text-sm font-semibold text-slate-700">
+                    Nenhuma vaga encontrada com esses filtros.
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Tente limpar a busca ou escolher outra área.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4 flex flex-wrap gap-4">
+                  {vagasFiltradas.map((vaga) => (
+                    <button
+                      key={vaga.id}
+                      type="button"
+                      onClick={() => setVagaAberta(vaga)}
+                      // Largura do cartão em cada tela (o gap é de 1rem = 16px):
+                      // celular  -> w-full  = 1 coluna
+                      // tablet   -> metade da largura menos metade do gap = 2 colunas
+                      // desktop  -> um terço menos dois terços do gap = 3 colunas
+                      className="cartao-clicavel animate-aparecer flex w-full cursor-pointer rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)]"
+                    >
+                      <CardVaga vaga={vaga} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </main>
         <Footer />
